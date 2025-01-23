@@ -289,8 +289,10 @@ namespace OffsetAllocator
     
     void Allocator::free(Allocation allocation)
     {
-        ASSERT(allocation.metadata != Allocation::NO_SPACE);
         if (!m_nodes) return;
+
+        if(allocation.metadata == Allocation::NO_SPACE)
+            return;
         
         uint32 nodeIndex = allocation.metadata;
         Node& node = m_nodes[nodeIndex];
