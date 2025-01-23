@@ -49,6 +49,10 @@ CMakeLists.txt exists for cmake folder include. Alternatively, just copy the Off
 using namespace OffsetAllocator;
 
 Allocator allocator(12345);                 // Allocator with 12345 contiguous elements in total
+/* OR
+Allocator allocator;
+allocator.init(12345);
+*/
 
 Allocation a = allocator.allocate(1337);    // Allocate a 1337 element contiguous range
 uint32 offset_a = a.offset;                 // Provides offset to the first element of the range
@@ -61,6 +65,41 @@ do_something(offset_b);
 allocator.free(a);                          // Free allocation a
 allocator.free(b);                          // Free allocation b
 ```
+
+### Maximum allocation size
+
+When the size passed into the allocator initialization is not a power of 2, it is not guaranteed that we can perform an allocation for encompasses the **full** range.
+
+```
+const uint32_t size = 1500;
+
+Allocator allocator;
+allocator.init(size);
+Allocation a = allocator.allocate(size);  // Try to allocate the full range
+assert(a.offset == Allocation::NO_SPACE); // -> fails because the max alloc size is actually 1408
+
+uint32_t allocatorMaxAllocSize = allocator.getMaxAllocationSize(); // = 1408
+```
+
+So what we can do is query the minimum size required by the allocator to be able to perform an allocation of a given size (if there is enough remaining space) and properly size our input data.
+
+```
+const uint32_t size = 1500;
+const uint32_t maxAllocSize = size; // Must be <= size
+const uint32_t allocatorMinSize = OffsetAllocator::Allocator::ComputeSizeToAllowMaxAllocSize(maxAllocSize); // 1536
+const uint32_t actualAllocSize = size > allocatorMinSize ? size : allocatorMinSize;
+
+const uint32_t allocatorMaxAllocSize = OffsetAllocator::Allocator::ComputeMaxAllocSize(actualAllocSize);
+assert(allocatorMaxAllocSize >= maxAllocSize);
+
+Allocator allocator;
+allocator.init(actualAllocSize);
+Allocation a = allocator.allocate(size);
+assert(a.offset == 0);
+
+T * data = allocateElements<T>(actualAllocSize);
+```
+
 
 ## References
 This allocator is similar to the two-level segregated fit (TLSF) algorithm. 
