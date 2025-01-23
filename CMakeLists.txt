@@ -11,3 +11,4 @@ set(SOURCE_FILES
 )
 
 add_library(${PROJECT_NAME} ${SOURCE_FILES})
+target_include_directories(${PROJECT_NAME} PUBLIC .)
