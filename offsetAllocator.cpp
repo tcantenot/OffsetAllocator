@@ -206,7 +206,7 @@ namespace OffsetAllocator
         // Out of allocations?
         if (m_freeOffset == Allocation::NO_SPACE)
         {
-            return {.offset = Allocation::NO_SPACE, .metadata = Allocation::NO_SPACE};
+            return { Allocation::NO_SPACE, Allocation::NO_SPACE };
         }
         
         // Round up to bin index to ensure that alloc >= bin
@@ -233,7 +233,7 @@ namespace OffsetAllocator
             // Out of space?
             if (topBinIndex == Allocation::NO_SPACE)
             {
-                return {.offset = Allocation::NO_SPACE, .metadata = Allocation::NO_SPACE};
+                return { Allocation::NO_SPACE, Allocation::NO_SPACE };
             }
 
             // All leaf bins here fit the alloc, since the top bin was rounded up. Start leaf search from bit 0.
@@ -284,7 +284,7 @@ namespace OffsetAllocator
             node.neighborNext = newNodeIndex;
         }
         
-        return {.offset = node.dataOffset, .metadata = nodeIndex};
+        return { node.dataOffset, nodeIndex };
     }
     
     void Allocator::free(Allocation allocation)
@@ -376,7 +376,7 @@ namespace OffsetAllocator
 #ifdef DEBUG_VERBOSE
         printf("Getting node %u from freelist[%u]\n", nodeIndex, m_freeOffset + 1);
 #endif
-        m_nodes[nodeIndex] = {.dataOffset = dataOffset, .dataSize = size, .binListNext = topNodeIndex};
+        m_nodes[nodeIndex] = { dataOffset,  size, topNodeIndex };
         if (topNodeIndex != Node::unused) m_nodes[topNodeIndex].binListPrev = nodeIndex;
         m_binIndices[binIndex] = nodeIndex;
         
@@ -464,7 +464,7 @@ namespace OffsetAllocator
             }
         }
 
-        return {.totalFreeSpace = freeStorage, .largestFreeRegion = largestFreeRegion};
+        return { freeStorage, largestFreeRegion};
     }
 
     StorageReportFull Allocator::storageReportFull() const
@@ -479,7 +479,7 @@ namespace OffsetAllocator
                 nodeIndex = m_nodes[nodeIndex].binListNext;
                 count++;
             }
-            report.freeRegions[i] = { .size = SmallFloat::floatToUint(i), .count = count };
+            report.freeRegions[i] = { SmallFloat::floatToUint(i), count };
         }
         return report;
     }
