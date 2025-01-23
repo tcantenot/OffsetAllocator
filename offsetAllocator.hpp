@@ -51,6 +51,29 @@ namespace OffsetAllocator
     class Allocator
     {
     public:
+        // Return the maximum allocation size supported when the allocator handle a range of 'size' elements
+        static uint32 ComputeMaxAllocSize(uint32 size);
+
+        // Return the minimum size of the range handled by the allocator that supports the given maximum allocation size.
+        // 
+        // Example:
+        //    const uint32_t inputDataSize = ...;
+        //    const uint32_t maxAllocSize = ...; // <= inputDataSize
+        //    const uint32_t allocatorMinSize = OffsetAllocator::Allocator::ComputeSizeToAllowMaxAllocSize(maxAllocSize);
+        //    const uint32_t actualAllocSize = inputDataSize > allocatorMinSize ? inputDataSize : allocatorMinSize;
+        //
+        //    const uint32_t allocatorMaxAllocSize = OffsetAllocator::Allocator::ComputeMaxAllocSize(actualAllocSize);
+        //    assert(allocatorMaxAllocSize >= maxAllocSize);
+        //
+        //    T * data = allocate<T>(actualAllocSize);
+        //
+        //    OffsetAllocator::Allocator allocator;
+        //    allocator.init(actualAllocSize, maxAllocCount);
+        //    OffsetAllocator::Allocation alloc = allocator.allocate(maxAllocSize);
+        //    assert(alloc.offset == 0);
+        static uint32 ComputeSizeToAllowMaxAllocSize(uint32 maxAllocSize);
+
+    public:
         #ifdef USE_16_BIT_NODE_INDICES
         static constexpr uint16 MAX_NUM_ALLOCS = 65535;
         static constexpr uint16 DEFAULT_MAX_NUM_ALLOCS = 65535;
@@ -70,6 +93,7 @@ namespace OffsetAllocator
         Allocation allocate(uint32 size);
         void free(Allocation allocation);
 
+        uint32 getMaxAllocationSize() const;
         uint32 allocationSize(Allocation allocation) const;
         StorageReport storageReport() const;
         StorageReportFull storageReportFull() const;

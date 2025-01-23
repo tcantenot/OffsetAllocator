@@ -135,6 +135,27 @@ namespace OffsetAllocator
 
     // Allocator...
 
+    uint32 Allocator::ComputeMaxAllocSize(uint32 size)
+    {
+        return OffsetAllocator::SmallFloat::floatToUint(OffsetAllocator::SmallFloat::uintToFloatRoundDown(size));
+    }
+
+    uint32 Allocator::ComputeSizeToAllowMaxAllocSize(uint32 maxAllocSize)
+    {
+        #if 1
+        return OffsetAllocator::SmallFloat::floatToUint(OffsetAllocator::SmallFloat::uintToFloatRoundUp(maxAllocSize));
+        #else
+        uint32 size = maxAllocSize;
+        uint32 actualMaxAllocSize = ComputeMaxAllocSize(size);
+        while(actualMaxAllocSize < maxAllocSize)
+        {
+            size += 1;
+            actualMaxAllocSize = ComputeMaxAllocSize(size);
+        }
+        return size;
+        #endif
+    }
+
     Allocator::Allocator():
         m_size(0),
         m_maxAllocs(0),
@@ -458,6 +479,11 @@ namespace OffsetAllocator
 #ifdef DEBUG_VERBOSE
         printf("Free storage: %u (-%u) (removeNodeFromBin)\n", m_freeStorage, node.dataSize);
 #endif
+    }
+
+    uint32 Allocator::getMaxAllocationSize() const
+    {
+        return ComputeMaxAllocSize(m_size);
     }
 
     uint32 Allocator::allocationSize(Allocation allocation) const
