@@ -51,9 +51,20 @@ namespace OffsetAllocator
     class Allocator
     {
     public:
-        Allocator(uint32 size, uint32 maxAllocs = 128 * 1024);
+        #ifdef USE_16_BIT_NODE_INDICES
+        static constexpr uint16 MAX_NUM_ALLOCS = 65535;
+        static constexpr uint16 DEFAULT_MAX_NUM_ALLOCS = 65535;
+        #else
+        static constexpr uint32 MAX_NUM_ALLOCS = 0xFFFFFFFEu;
+        static constexpr uint32 DEFAULT_MAX_NUM_ALLOCS = 128 * 1024;
+        #endif
+
+        Allocator();
+        Allocator(uint32 size, NodeIndex maxAllocs = DEFAULT_MAX_NUM_ALLOCS);
         Allocator(Allocator &&other);
         ~Allocator();
+
+        void init(uint32 size, NodeIndex maxAllocs = DEFAULT_MAX_NUM_ALLOCS);
         void reset();
         
         Allocation allocate(uint32 size);

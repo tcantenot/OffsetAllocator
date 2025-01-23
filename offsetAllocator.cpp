@@ -134,17 +134,24 @@ namespace OffsetAllocator
     }
 
     // Allocator...
-    Allocator::Allocator(uint32 size, uint32 maxAllocs) :
-        m_size(size),
-        m_maxAllocs(maxAllocs),
+
+    Allocator::Allocator():
+        m_size(0),
+        m_maxAllocs(0),
+        m_freeStorage(0),
+        m_usedBinsTop(0),
+        m_usedBins(),
+        m_binIndices(),
         m_nodes(nullptr),
-        m_freeNodes(nullptr)
+        m_freeNodes(nullptr),
+        m_freeOffset(0)
     {
-        if (sizeof(NodeIndex) == 2)
-        {
-            ASSERT(maxAllocs <= 65536);
-        }
-        reset();
+
+    }
+
+    Allocator::Allocator(uint32 size, NodeIndex maxAllocs): Allocator()
+    {
+        init(size, maxAllocs);
     }
 
     Allocator::Allocator(Allocator &&other) :
@@ -166,6 +173,32 @@ namespace OffsetAllocator
         other.m_usedBinsTop = 0;
     }
 
+    void Allocator::init(uint32 size, NodeIndex maxAllocs)
+    {
+        if constexpr (sizeof(NodeIndex) == 2)
+        {
+            ASSERT(maxAllocs <= MAX_NUM_ALLOCS);
+        }
+
+        m_size = size;
+        m_maxAllocs = maxAllocs;
+
+        reset();
+
+        m_nodes = new Node[m_maxAllocs+1];
+        m_freeNodes = new NodeIndex[m_maxAllocs+1];
+        
+        // Freelist is a stack. Nodes in inverse order so that [0] pops first.
+        for (uint32 i = 0; i < m_maxAllocs+1; i++)
+        {
+            m_freeNodes[i] = m_maxAllocs - i;
+        }
+        
+        // Start state: Whole storage as one big node
+        // Algorithm will split remainders and push them back as smaller nodes
+        insertNodeIntoBin(m_size, 0);
+    }
+
     void Allocator::reset()
     {
         m_freeStorage = 0;
@@ -180,19 +213,6 @@ namespace OffsetAllocator
         
         if (m_nodes) delete[] m_nodes;
         if (m_freeNodes) delete[] m_freeNodes;
-
-        m_nodes = new Node[m_maxAllocs+1];
-        m_freeNodes = new NodeIndex[m_maxAllocs+1];
-        
-        // Freelist is a stack. Nodes in inverse order so that [0] pops first.
-        for (uint32 i = 0; i < m_maxAllocs+1; i++)
-        {
-            m_freeNodes[i] = m_maxAllocs - i;
-        }
-        
-        // Start state: Whole storage as one big node
-        // Algorithm will split remainders and push them back as smaller nodes
-        insertNodeIntoBin(m_size, 0);
     }
 
     Allocator::~Allocator()
