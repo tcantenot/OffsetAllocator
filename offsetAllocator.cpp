@@ -232,8 +232,16 @@ namespace OffsetAllocator
         for (uint32 i = 0 ; i < NUM_LEAF_BINS; i++)
             m_binIndices[i] = Node::unused;
         
-        if (m_nodes) delete[] m_nodes;
-        if (m_freeNodes) delete[] m_freeNodes;
+        if (m_nodes)
+        {
+            delete[] m_nodes;
+            m_nodes = nullptr;
+        }
+        if (m_freeNodes)
+        {
+            delete[] m_freeNodes;
+            m_freeNodes = nullptr;
+        }
     }
 
     Allocator::~Allocator()
