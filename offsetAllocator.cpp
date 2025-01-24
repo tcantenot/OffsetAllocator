@@ -427,7 +427,7 @@ namespace OffsetAllocator
 #ifdef DEBUG_VERBOSE
         printf("Getting node %u from freelist[%u]\n", nodeIndex, m_freeOffset + 1);
 #endif
-        m_nodes[nodeIndex] = { dataOffset,  size, topNodeIndex };
+        m_nodes[nodeIndex] = { dataOffset,  size, /*binListPrev*/Node::unused, /*binListNext*/topNodeIndex };
         if (topNodeIndex != Node::unused) m_nodes[topNodeIndex].binListPrev = nodeIndex;
         m_binIndices[binIndex] = nodeIndex;
         
