@@ -1,10 +1,7 @@
 #include <catch2/catch_all.hpp>
 #include <catch2/catch_test_macros.hpp>
-#include "gfxTestFixture.hpp"
 
 #include "offsetAllocator.hpp"
-
-using namespace f;
 
 namespace OffsetAllocator
 {
@@ -15,6 +12,8 @@ namespace OffsetAllocator
     extern uint32 floatToUint(uint32 floatValue);
     }
 }
+
+using uint32 = OffsetAllocator::uint32;
 
 namespace offsetAllocatorTests
 {
@@ -43,12 +42,12 @@ namespace offsetAllocatorTests
             };
             
             NumberFloatUpDown testData[] = {
-                {.number = 17, .up = 17, .down = 16},
-                {.number = 118, .up = 39, .down = 38},
-                {.number = 1024, .up = 64, .down = 64},
-                {.number = 65536, .up = 112, .down = 112},
-                {.number = 529445, .up = 137, .down = 136},
-                {.number = 1048575, .up = 144, .down = 143},
+                { 17, 17, 16},
+                { 118, 39, 38},
+                { 1024, 64, 64},
+                { 65536, 112, 112},
+                { 529445, 137, 136},
+                { 1048575, 144, 143},
             };
             
             for (uint32 i = 0; i < sizeof(testData) / sizeof(NumberFloatUpDown); i++)
@@ -208,7 +207,7 @@ namespace offsetAllocatorTests
             // Allocate 256x 1MB. Should fit. Then free four random slots and reallocate four slots.
             // Plus free four contiguous slots an allocate 4x larger slot. All must be zero fragmentation!
             OffsetAllocator::Allocation allocations[256];
-            for (uint i = 0; i < 256; i++)
+            for (uint32 i = 0; i < 256; i++)
             {
                 allocations[i] = allocator.allocate(1024 * 1024);
                 REQUIRE(allocations[i].offset == i * 1024 * 1024);
@@ -241,7 +240,7 @@ namespace offsetAllocatorTests
             REQUIRE(allocations[95].offset != OffsetAllocator::Allocation::NO_SPACE);
             REQUIRE(allocations[151].offset != OffsetAllocator::Allocation::NO_SPACE);
 
-            for (uint i = 0; i < 256; i++)
+            for (uint32 i = 0; i < 256; i++)
             {
                 if (i < 152 || i > 154)
                     allocator.free(allocations[i]);
