@@ -299,7 +299,8 @@ namespace OffsetAllocator
         node.dataSize = size;
         node.used = true;
         m_binIndices[binIndex] = node.binListNext;
-        if (node.binListNext != Node::unused) m_nodes[node.binListNext].binListPrev = Node::unused;
+        if (node.binListNext != Node::unused)
+            m_nodes[node.binListNext].binListPrev = Node::unused;
         m_freeStorage -= nodeTotalSize;
 #ifdef DEBUG_VERBOSE
         printf("Free storage: %u (-%u) (allocate)\n", m_freeStorage, nodeTotalSize);
@@ -327,7 +328,8 @@ namespace OffsetAllocator
             
             // Link nodes next to each other so that we can merge them later if both are free
             // And update the old next neighbor to point to the new node (in middle)
-            if (node.neighborNext != Node::unused) m_nodes[node.neighborNext].neighborPrev = newNodeIndex;
+            if (node.neighborNext != Node::unused)
+                m_nodes[node.neighborNext].neighborPrev = newNodeIndex;
             m_nodes[newNodeIndex].neighborPrev = nodeIndex;
             m_nodes[newNodeIndex].neighborNext = node.neighborNext;
             node.neighborNext = newNodeIndex;
@@ -428,7 +430,8 @@ namespace OffsetAllocator
         printf("Getting node %u from freelist[%u]\n", nodeIndex, m_freeOffset + 1);
 #endif
         m_nodes[nodeIndex] = { dataOffset,  size, /*binListPrev*/Node::unused, /*binListNext*/topNodeIndex };
-        if (topNodeIndex != Node::unused) m_nodes[topNodeIndex].binListPrev = nodeIndex;
+        if (topNodeIndex != Node::unused)
+            m_nodes[topNodeIndex].binListPrev = nodeIndex;
         m_binIndices[binIndex] = nodeIndex;
         
         m_freeStorage += size;
