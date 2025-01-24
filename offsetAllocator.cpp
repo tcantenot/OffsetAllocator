@@ -23,6 +23,9 @@
 
 namespace OffsetAllocator
 {
+    // Count leading zeros of the given integer (LZCNT = Leading Zero Count).
+    // -> number of zeros before the first bit set from the MSB to the LSB
+    // lzcnt_nonzero(2) = 30
     inline uint32 lzcnt_nonzero(uint32 v)
     {
 #ifdef _MSC_VER
@@ -34,6 +37,9 @@ namespace OffsetAllocator
 #endif
     }
 
+    // Count the trailing zeros of the given integer (TZCNT = Leading Zero Count).
+    // -> index of the first bit set
+    // tzcnt_nonzero(2) = 1
     inline uint32 tzcnt_nonzero(uint32 v)
     {
 #ifdef _MSC_VER
