@@ -256,4 +256,26 @@ namespace offsetAllocatorTests
             allocator.free(validateAll);
         }
     }
+
+    TEST_CASE("max alloc", "[offsetAllocator]")
+    {
+        OffsetAllocator::Allocator allocator(36864, 2);
+        OffsetAllocator::Allocation a = allocator.allocate(32);
+        REQUIRE(a.offset == 0);
+        OffsetAllocator::Allocation b = allocator.allocate(32);
+        REQUIRE(b.offset == 32);
+        OffsetAllocator::Allocation c = allocator.allocate(32);
+        REQUIRE(c.offset == OffsetAllocator::Allocation::NO_SPACE);
+
+        allocator.free(a);
+        allocator.free(b);
+        allocator.free(c);
+
+        OffsetAllocator::Allocation d = allocator.allocate(32);
+        REQUIRE(d.offset == 0);
+        OffsetAllocator::Allocation e = allocator.allocate(32);
+        REQUIRE(e.offset == 32);
+        OffsetAllocator::Allocation f = allocator.allocate(32);
+        REQUIRE(f.offset == OffsetAllocator::Allocation::NO_SPACE);
+    }
 }
