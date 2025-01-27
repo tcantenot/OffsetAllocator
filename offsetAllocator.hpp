@@ -1,7 +1,7 @@
 // (C) Sebastian Aaltonen 2023
 // MIT License (see file: LICENSE)
 
-//#define USE_16_BIT_OFFSETS
+//#define USE_16_BIT_NODE_INDICES
 
 namespace OffsetAllocator
 {
