@@ -9,7 +9,7 @@ namespace OffsetAllocator
     {
         extern uint32 uintToFloatRoundUp(uint32 size);
         extern uint32 uintToFloatRoundDown(uint32 size);
-    extern uint32 floatToUint(uint32 floatValue);
+        extern uint32 floatToUint(uint32 floatValue);
     }
 }
 
