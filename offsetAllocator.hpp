@@ -25,8 +25,12 @@ namespace OffsetAllocator
 
     struct Allocation
     {
-        static constexpr uint32 NO_SPACE = 0xffffffff;
-        
+        #ifdef USE_16_BIT_NODE_INDICES
+        static constexpr NodeIndex NO_SPACE = 0xFFFF;
+        #else
+        static constexpr NodeIndex NO_SPACE = 0xFFFFFFFF;
+        #endif
+ 
         uint32 offset = NO_SPACE;
         NodeIndex metadata = NO_SPACE; // internal: node index
     };
@@ -99,12 +103,16 @@ namespace OffsetAllocator
         StorageReportFull storageReportFull() const;
         
     private:
-        uint32 insertNodeIntoBin(uint32 size, uint32 dataOffset);
-        void removeNodeFromBin(uint32 nodeIndex);
+        NodeIndex insertNodeIntoBin(uint32 size, uint32 dataOffset);
+        void removeNodeFromBin(NodeIndex nodeIndex);
 
         struct Node
         {
-            static constexpr NodeIndex unused = 0xffffffff;
+            #ifdef USE_16_BIT_NODE_INDICES
+            static constexpr NodeIndex unused = 0xFFFF;
+            #else
+            static constexpr NodeIndex unused = 0xFFFFFFFF;
+            #endif
             
             uint32 dataOffset = 0;
             uint32 dataSize = 0;
@@ -116,7 +124,7 @@ namespace OffsetAllocator
         };
     
         uint32 m_size;
-        uint32 m_maxAllocs;
+        NodeIndex m_maxAllocs;
         uint32 m_freeStorage;
 
         uint32 m_usedBinsTop;
@@ -125,6 +133,6 @@ namespace OffsetAllocator
                 
         Node* m_nodes;
         NodeIndex* m_freeNodes;
-        uint32 m_freeOffset;
+        NodeIndex m_freeOffset;
     };
 }

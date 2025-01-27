@@ -212,13 +212,15 @@ namespace OffsetAllocator
 
         reset();
 
-        m_nodes = new Node[m_maxAllocs+1];
-        m_freeNodes = new NodeIndex[m_maxAllocs+1];
+        uint32 maxAllocs32 = m_maxAllocs;
+
+        m_nodes = new Node[maxAllocs32+1];
+        m_freeNodes = new NodeIndex[maxAllocs32+1];
         
         // Freelist is a stack. Nodes in inverse order so that [0] pops first.
-        for (uint32 i = 0; i < m_maxAllocs+1; i++)
+        for (uint32 i = 0; i <= m_maxAllocs; i++)
         {
-            m_freeNodes[i] = m_maxAllocs - i;
+            m_freeNodes[i] = (NodeIndex)(maxAllocs - i);
         }
         
         // Start state: Whole storage as one big node
@@ -299,7 +301,7 @@ namespace OffsetAllocator
         uint32 binIndex = (topBinIndex << TOP_BINS_INDEX_SHIFT) | leafBinIndex;
         
         // Pop the top node of the bin. Bin top = node.next.
-        uint32 nodeIndex = m_binIndices[binIndex];
+        NodeIndex nodeIndex = m_binIndices[binIndex];
         Node& node = m_nodes[nodeIndex];
         uint32 nodeTotalSize = node.dataSize;
         node.dataSize = size;
@@ -330,7 +332,7 @@ namespace OffsetAllocator
         uint32 reminderSize = nodeTotalSize - size;
         if (reminderSize > 0)
         {
-            uint32 newNodeIndex = insertNodeIntoBin(reminderSize, node.dataOffset + size);
+            NodeIndex newNodeIndex = insertNodeIntoBin(reminderSize, node.dataOffset + size);
             
             // Link nodes next to each other so that we can merge them later if both are free
             // And update the old next neighbor to point to the new node (in middle)
@@ -351,7 +353,7 @@ namespace OffsetAllocator
         if(allocation.metadata == Allocation::NO_SPACE)
             return;
         
-        uint32 nodeIndex = allocation.metadata;
+        NodeIndex nodeIndex = allocation.metadata;
         Node& node = m_nodes[nodeIndex];
         
         // Double delete check
@@ -388,8 +390,8 @@ namespace OffsetAllocator
             node.neighborNext = nextNode.neighborNext;
         }
 
-        uint32 neighborNext = node.neighborNext;
-        uint32 neighborPrev = node.neighborPrev;
+        NodeIndex neighborNext = node.neighborNext;
+        NodeIndex neighborPrev = node.neighborPrev;
         
         // Insert the removed node to freelist
 #ifdef DEBUG_VERBOSE
@@ -398,7 +400,7 @@ namespace OffsetAllocator
         m_freeNodes[++m_freeOffset] = nodeIndex;
 
         // Insert the (combined) free node to bin
-        uint32 combinedNodeIndex = insertNodeIntoBin(size, offset);
+        NodeIndex combinedNodeIndex = insertNodeIntoBin(size, offset);
 
         // Connect neighbors with the new combined node
         if (neighborNext != Node::unused)
@@ -413,7 +415,7 @@ namespace OffsetAllocator
         }
     }
 
-    uint32 Allocator::insertNodeIntoBin(uint32 size, uint32 dataOffset)
+    NodeIndex Allocator::insertNodeIntoBin(uint32 size, uint32 dataOffset)
     {
         // Round down to bin index to ensure that bin >= alloc
         uint32 binIndex = SmallFloat::uintToFloatRoundDown(size);
@@ -430,10 +432,10 @@ namespace OffsetAllocator
         }
         
         // Take a freelist node and insert on top of the bin linked list (next = old top)
-        uint32 topNodeIndex = m_binIndices[binIndex];
-        uint32 nodeIndex = m_freeNodes[m_freeOffset--];
+        NodeIndex topNodeIndex = m_binIndices[binIndex];
+        NodeIndex nodeIndex = m_freeNodes[m_freeOffset--];
 #ifdef DEBUG_VERBOSE
-        printf("Getting node %u from freelist[%u]\n", nodeIndex, m_freeOffset + 1);
+        printf("Getting node %u from freelist[%u]\n", (uint32)nodeIndex, (uint32)m_freeOffset + 1);
 #endif
         m_nodes[nodeIndex] = { dataOffset,  size, /*binListPrev*/Node::unused, /*binListNext*/topNodeIndex };
         if (topNodeIndex != Node::unused)
@@ -448,7 +450,7 @@ namespace OffsetAllocator
         return nodeIndex;
     }
     
-    void Allocator::removeNodeFromBin(uint32 nodeIndex)
+    void Allocator::removeNodeFromBin(NodeIndex nodeIndex)
     {
         Node &node = m_nodes[nodeIndex];
         
