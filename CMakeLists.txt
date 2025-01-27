@@ -13,6 +13,11 @@ set(SOURCE_FILES
 add_library(${PROJECT_NAME} ${SOURCE_FILES})
 target_include_directories(${PROJECT_NAME} PUBLIC .)
 
+target_compile_options(${PROJECT_NAME} PRIVATE
+  $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX>
+  $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -Wpedantic -Werror>
+)
+
 Include(FetchContent)
 
 set(FETCHCONTENT_BASE_DIR "${CMAKE_BINARY_DIR}/external")
